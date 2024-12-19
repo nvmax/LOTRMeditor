@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 import configparser
 import os
 from typing import Dict, Any
@@ -9,6 +9,20 @@ class MoriaConfigEditor:
         self.root = tk.Tk()
         self.root.title("Moria Server Config Editor")
         self.config_file = 'MoriaServerConfig.ini'
+        
+        # Create file selection frame
+        self.file_frame = ttk.Frame(self.root)
+        self.file_frame.pack(fill='x', padx=5, pady=5)
+        
+        self.file_label = ttk.Label(self.file_frame, text="Config File:")
+        self.file_label.pack(side='left', padx=5)
+        
+        self.file_path = tk.StringVar(value=self.config_file)
+        self.file_entry = ttk.Entry(self.file_frame, textvariable=self.file_path, width=50)
+        self.file_entry.pack(side='left', padx=5)
+        
+        self.browse_button = ttk.Button(self.file_frame, text="Browse", command=self.browse_config)
+        self.browse_button.pack(side='left', padx=5)
         
         # Create notebook for tabs
         self.notebook = ttk.Notebook(self.root)
@@ -165,8 +179,19 @@ class MoriaConfigEditor:
             if isinstance(child, ttk.Combobox):
                 child.configure(state=state)
 
+    def browse_config(self):
+        filename = filedialog.askopenfilename(
+            title="Select MoriaServerConfig.ini",
+            filetypes=[("INI files", "*.ini"), ("All files", "*.*")]
+        )
+        if filename:
+            self.config_file = filename
+            self.file_path.set(filename)
+            self.load_config()
+
     def load_config(self):
         if not os.path.exists(self.config_file):
+            messagebox.showwarning("File Not Found", f"Config file not found at: {self.config_file}\nDefault values will be used.")
             return
             
         config = configparser.ConfigParser()
